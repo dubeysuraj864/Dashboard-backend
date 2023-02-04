@@ -47,31 +47,41 @@ app.get("/products", async (req, res) => {
 });
 
 app.delete("/product/:id", async (req, res) => {
-  const result = await products.deleteOne({_id: req.params.id });
+  const result = await products.deleteOne({ _id: req.params.id });
   res.send(result);
 });
 
-app.get("/products/:id", async (req, res) =>{
-  const result = await products.findOne({_id: req.params.id});
-  if(result){
-    res.send(result)
+app.get("/products/:id", async (req, res) => {
+  const result = await products.findOne({ _id: req.params.id });
+  if (result) {
+    res.send(result);
+  } else {
+    res.send({ result: "No User Found." });
   }
-  else{
-    res.send({result: "No User Found."})
-  }
+});
 
-})
-
-
-app.put("/products/:id", async (req, res)=>{
+app.put("/products/:id", async (req, res) => {
   let result = await products.updateOne(
-
-    {_id:req.params.id},
+    { _id: req.params.id },
     {
-        $set:req.body
+      $set: req.body,
     }
-  )
-  res.send(result)
-})
+  );
+  res.send(result);
+});
+
+app.get("/search/:key", async (req, res) => {
+  let result = await products.find({
+    $or: [
+      { name: { $regex: req.params.key } },
+      { brand: { $regex: req.params.key } },
+      // { price: { $regex: req.params.key } },
+      { category: { $regex: req.params.key } },
+      // { rating: { $regex: req.params.key } },
+    
+    ],
+  });
+  res.send(result);
+});
 
 app.listen(5000);
