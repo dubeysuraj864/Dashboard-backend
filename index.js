@@ -1,9 +1,10 @@
 const express = require("express");
 require("./db/config");
 const cors = require("cors");
-const Users = require("./db/users");
 const users = require("./db/users");
 const products = require("./db/products");
+const jwt = require("jsonwebtoken");
+const jwtKey = "e-comm";
 
 const app = express();
 app.use(cors());
@@ -12,11 +13,16 @@ app.get("/", (req, res) => {
 });
 app.use(express.json());
 app.post("/register", async (req, res) => {
-  let user = new Users(req.body);
+  let user = new users(req.body);
   let result = await user.save();
   result = result.toObject();
   delete result.password;
-  res.send(result);
+  jwt.sign({ result }, jwtKey, { expiresIn: "2h" }, (err, token) => {
+    if (err) {
+      res.send({ result: "Something went wrong, please try again" });
+    }
+    res.send({ result, auth: token });
+  });
 });
 
 app.post("/login", async (req, res) => {
@@ -24,7 +30,12 @@ app.post("/login", async (req, res) => {
   if (req.body.password && req.body.email) {
     let user = await users.findOne(req.body).select("-password");
     if (user) {
-      res.send(user);
+      jwt.sign({ user }, jwtKey, { expiresIn: "2h" }, (err, token) => {
+        if (err) {
+          res.send({ result: "Something went wrong, please try again" });
+        }
+        res.send({ user, auth: token });
+      });
     } else {
       res.send({ result: " No user found" });
     }
@@ -78,7 +89,6 @@ app.get("/search/:key", async (req, res) => {
       // { price: { $regex: req.params.key } },
       { category: { $regex: req.params.key } },
       // { rating: { $regex: req.params.key } },
-    
     ],
   });
   res.send(result);
