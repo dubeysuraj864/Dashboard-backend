@@ -94,4 +94,23 @@ app.get("/search/:key", async (req, res) => {
   res.send(result);
 });
 
+function verifyToken(req, res, next) {
+  const token = req.headers["authorization"];
+  if (token) {
+    String(token).split(" ");
+    console.log("middleware called if", token);
+    jwt.verify(token, jwtKey, (err, valid) => {
+      if(err){
+          res.send("Please provide valid token")
+      }
+      else{
+
+      }
+    });
+  } else {
+    res.send("Please add token with header")
+  }
+  next();
+}
+
 app.listen(5000);
