@@ -5,6 +5,10 @@ const users = require("./db/users");
 const products = require("./db/products");
 const jwt = require("jsonwebtoken");
 const jwtKey = "e-comm";
+const PORT = 5000;
+const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config({ path: "/config.env" });
 
 const app = express();
 app.use(cors());
@@ -100,17 +104,20 @@ function verifyToken(req, res, next) {
     String(token).split(" ");
     console.log("middleware called if", token);
     jwt.verify(token, jwtKey, (err, valid) => {
-      if(err){
-          res.send("Please provide valid token")
-      }
-      else{
-
+      if (err) {
+        res.send("Please provide valid token");
+      } else {
       }
     });
   } else {
-    res.send("Please add token with header")
+    res.send("Please add token with header");
   }
   next();
 }
+
+app.use(express.static(path.join(__dirname, '/frontend/build')));
+app.get("*", function(req,res){
+  res.sendFile(path.join(__dirname, "/frontend/build/index.html"))
+})
 
 app.listen(5000);
